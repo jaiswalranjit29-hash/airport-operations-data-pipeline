@@ -4,7 +4,6 @@ A small end-to-end data engineering project for validating, cleaning, modelling,
 
 The repository is designed as a reproducible portfolio project rather than a production aviation system. All included flight data is synthetic.
 
-![Power BI executive overview](docs/images/powerbi_overview.png)
 
 ## Problem statement
 
