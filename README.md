@@ -1,121 +1,265 @@
-# Airport Operations Data Pipeline
+Airport Operations Data Pipeline
 
-A small end-to-end data engineering project for validating, cleaning, modelling, and reporting synthetic airport flight operations data. The pipeline uses Python and pandas for ETL, produces traceable data-quality issues and KPI outputs, prepares a star schema for Power BI, and can optionally load validated data into PostgreSQL.
+Eine kompakte End-to-End-Data-Engineering-Pipeline zur Validierung, Bereinigung, Modellierung und Auswertung synthetischer Flughafenbetriebsdaten.
 
-The repository is designed as a reproducible portfolio project rather than a production aviation system. All included flight data is synthetic.
+Die Pipeline nutzt Python und pandas für ETL-Prozesse, dokumentiert Datenqualitätsprobleme nachvollziehbar, erzeugt KPI-Auswertungen, bereitet ein Star Schema für Power BI auf und kann validierte Daten optional in PostgreSQL laden.
+
+📌 Hinweis: Dieses Repository ist als reproduzierbares Portfolio-Projekt konzipiert und nicht als produktives Luftfahrtsystem. Sämtliche enthaltenen Flugdaten sind synthetisch.
 
 
-## Problem statement
 
-Operational CSV data is rarely analysis-ready. Missing identifiers, invalid airport codes, duplicate records, inconsistent routes, broken timestamps, and invalid passenger counts can distort downstream reports if they are not handled before loading and analysis.
+Problemstellung
 
-This project separates accepted and rejected records, records the reason for each rejection, creates reporting datasets from valid flights, and keeps the workflow reproducible from source data to dashboard-ready outputs.
+Operative CSV-Daten sind in der Praxis selten direkt analysebereit. Fehlende Kennungen, ungültige Flughafencodes, doppelte Datensätze, inkonsistente Routen, fehlerhafte Zeitstempel oder ungültige Passagierzahlen können nachgelagerte Auswertungen verfälschen, wenn sie nicht bereits vor der Analyse erkannt und behandelt werden.
 
-## Project objectives
+Dieses Projekt trennt deshalb gültige und abgelehnte Datensätze, dokumentiert die jeweilige Fehlerursache und erstellt aus den validierten Flugdaten strukturierte Reporting-Datensätze. Dadurch bleibt der gesamte Ablauf – von der Quelldatei bis zu den Dashboard-Daten – nachvollziehbar und reproduzierbar.
 
-- Build a clear CSV-based ETL pipeline with separate extract, transform, load, and reporting modules.
-- Apply explicit data-quality rules before records reach analytics outputs.
-- Preserve rejected records and create traceable quality-issue records instead of silently dropping bad data.
-- Generate operational KPI reports for airlines, routes, dates, and management summaries.
-- Prepare a simple star schema for Power BI.
-- Demonstrate optional relational loading and SQL analysis with PostgreSQL.
-- Keep the project testable and easy to run locally.
+Ziele des Projekts
 
-## Demo results
+Eine klar strukturierte CSV-basierte ETL-Pipeline mit getrennten Modulen für Extract, Transform, Load und Reporting aufbauen.
 
-The committed demo dataset is deterministic and contains 800 synthetic flight records covering six months.
+Explizite Datenqualitätsregeln anwenden, bevor Datensätze in Analyse- oder Reporting-Ausgaben gelangen.
 
-| Metric | Result |
-|---|---:|
-| Extracted records | 800 |
-| Accepted records | 728 |
-| Rejected records | 72 |
-| Data-quality issues | 72 |
-| Acceptance rate | 91.00% |
-| Valid-flight passengers | 136,120 |
-| Airlines | 8 |
-| Routes | 12 |
+Abgelehnte Datensätze nicht stillschweigend verwerfen, sondern inklusive Fehlergrund nachvollziehbar dokumentieren.
 
-A normal run ends with:
+Operative KPI-Berichte für Airlines, Routen, Tages- und Monatsauswertungen sowie Management-Zusammenfassungen erzeugen.
 
-```text
+Ein übersichtliches Star Schema für Power BI bereitstellen.
+
+Optionales relationales Laden sowie SQL-Analysen mit PostgreSQL demonstrieren.
+
+Das Projekt lokal einfach ausführbar, testbar und reproduzierbar halten.
+
+📊 Demo-Ergebnisse
+
+Der im Repository enthaltene Demo-Datensatz wird deterministisch erzeugt und umfasst 800 synthetische Flugdatensätze über einen Zeitraum von sechs Monaten.
+
+Kennzahl
+
+Ergebnis
+
+Eingelesene Datensätze
+
+800
+
+Akzeptierte Datensätze
+
+728
+
+Abgelehnte Datensätze
+
+72
+
+Erkannte Datenqualitätsprobleme
+
+72
+
+Akzeptanzrate
+
+91,00 %
+
+Passagiere in gültigen Flügen
+
+136.120
+
+Airlines
+
+8
+
+Routen
+
+12
+
+Ein regulärer Pipeline-Lauf endet beispielsweise mit:
+
 Pipeline completed | extracted=800 | valid=728 | rejected=72 | issues=72
-```
 
-## Pipeline architecture
+Pipeline-Architektur
 
-```text
-Synthetic / custom CSV input
-          |
-          v
-     Extract (pandas)
-          |
-          v
-Normalize + validate + enrich
-          |
-     +----+------------------+
-     |                       |
-     v                       v
-Valid flight records     Rejected records
-     |                       |
-     |                       v
-     |                Quality issue log
-     |
-     +----------+------------+
-                |
-       +--------+---------+----------------+
-       |                  |                |
-       v                  v                v
- KPI / CSV reports   Power BI tables   PostgreSQL
-                                     (optional load)
-```
+Synthetische / eigene CSV-Eingabe
+               |
+               v
+        Extract (pandas)
+               |
+               v
+ Normalisieren + Validieren + Anreichern
+               |
+        +------+-------------------+
+        |                          |
+        v                          v
+ Gültige Flugdaten          Abgelehnte Datensätze
+        |                          |
+        |                          v
+        |                 Datenqualitätsprotokoll
+        |
+        +-----------+--------------+
+                    |
+          +---------+----------+----------------+
+          |                    |                |
+          v                    v                v
+   KPI-/CSV-Reports      Power-BI-Tabellen   PostgreSQL
+                                           (optional)
 
-### ETL workflow
+ETL-Ablauf
 
-1. **Extract** - `src/extract.py` reads a non-empty CSV source into a pandas DataFrame.
-2. **Transform** - `src/transform.py` normalizes text, validates required fields, rejects invalid rows, calculates delays, classifies delay bands, and adds reporting fields.
-3. **Quality tracking** - rejected rows are converted into issue records with a rule code, quality dimension, severity, workflow status, and source-row reference.
-4. **Load** - clean data, rejected data, quality issues, KPI reports, and Power BI tables are written to CSV.
-5. **Database load (optional)** - `--with-db` creates the PostgreSQL schema and upserts dimensions and flight facts using `psycopg`.
-6. **Reporting** - Python creates airline, route, daily, monthly, executive, quality, and delay-statistics outputs plus a Markdown management summary.
+Extract – src/extract.py liest eine nicht leere CSV-Datei in einen pandas DataFrame ein.
 
-## Data-quality checks
+Transform – src/transform.py normalisiert Textwerte, validiert Pflichtfelder, lehnt ungültige Zeilen ab, berechnet Verspätungen, ordnet Delay-Kategorien zu und ergänzt Reporting-Felder.
 
-The current implementation contains these rules:
+Quality Tracking – Abgelehnte Datensätze werden in nachvollziehbare Quality-Issue-Einträge mit Regelcode, Qualitätsdimension, Schweregrad, Workflow-Status und Referenz auf die Quellzeile überführt.
 
-| Rule | Dimension | Check | Severity |
-|---|---|---|---|
-| DQ001 | Completeness | Missing flight ID | High |
-| DQ002 | Validity | Invalid flight ID format | Medium |
-| DQ003 | Uniqueness | Duplicate flight ID | High |
-| DQ004 | Completeness | Missing airline | High |
-| DQ005 | Validity | Invalid origin airport code | High |
-| DQ006 | Validity | Invalid destination airport code | High |
-| DQ007 | Consistency | Origin equals destination | High |
-| DQ008 | Validity | Invalid scheduled timestamp | High |
-| DQ009 | Completeness | Missing actual time for a non-cancelled flight | Medium |
-| DQ010 | Validity | Invalid flight status | High |
-| DQ011 | Validity | Passenger count is not a non-negative integer | High |
+Load – Bereinigte Daten, abgelehnte Datensätze, Quality Issues, KPI-Berichte und Power-BI-Tabellen werden als CSV-Dateien ausgegeben.
 
-A non-cancelled flight is classified as delayed when its calculated delay is greater than `DELAY_THRESHOLD_MINUTES` (15 minutes by default).
+Database Load (optional) – Mit --with-db wird das PostgreSQL-Schema erstellt. Dimensionen und Flight Facts werden anschließend mit psycopg per Upsert geladen.
 
-## Technologies used
+Reporting – Python erzeugt KPI-Auswertungen nach Airline, Route, Tag und Monat sowie Executive-, Quality- und Delay-Reports einschließlich einer Management-Zusammenfassung im Markdown-Format.
 
-| Area | Technology |
-|---|---|
-| Data processing | Python 3, pandas |
-| Database | PostgreSQL, psycopg |
-| SQL | Schema design, views, joins, CTEs, aggregates, window functions |
-| Data modelling | Fact and dimension tables / star-schema export |
-| BI | Power BI, DAX, Power Query |
-| Spreadsheet reporting | Excel |
-| Testing | Python `unittest` |
-| CI | GitHub Actions |
-| Logging | Python `logging` |
+✅ Datenqualitätsprüfungen
 
-## Repository structure
+Die aktuelle Implementierung enthält folgende Regeln:
 
-```text
+Regel
+
+Dimension
+
+Prüfung
+
+Schweregrad
+
+DQ001
+
+Vollständigkeit
+
+Fehlende Flight ID
+
+Hoch
+
+DQ002
+
+Gültigkeit
+
+Ungültiges Format der Flight ID
+
+Mittel
+
+DQ003
+
+Eindeutigkeit
+
+Doppelte Flight ID
+
+Hoch
+
+DQ004
+
+Vollständigkeit
+
+Fehlende Airline
+
+Hoch
+
+DQ005
+
+Gültigkeit
+
+Ungültiger Flughafencode des Abflugorts
+
+Hoch
+
+DQ006
+
+Gültigkeit
+
+Ungültiger Flughafencode des Zielorts
+
+Hoch
+
+DQ007
+
+Konsistenz
+
+Abflug- und Zielort sind identisch
+
+Hoch
+
+DQ008
+
+Gültigkeit
+
+Ungültiger geplanter Zeitstempel
+
+Hoch
+
+DQ009
+
+Vollständigkeit
+
+Tatsächliche Zeit fehlt bei einem nicht stornierten Flug
+
+Mittel
+
+DQ010
+
+Gültigkeit
+
+Ungültiger Flugstatus
+
+Hoch
+
+DQ011
+
+Gültigkeit
+
+Passagierzahl ist keine nicht-negative Ganzzahl
+
+Hoch
+
+Ein nicht stornierter Flug wird als verspätet klassifiziert, wenn die berechnete Verspätung größer als DELAY_THRESHOLD_MINUTES ist. Der Standardwert beträgt 15 Minuten.
+
+Verwendete Technologien
+
+Bereich
+
+Technologie
+
+Datenverarbeitung
+
+Python 3, pandas
+
+Datenbank
+
+PostgreSQL, psycopg
+
+SQL
+
+Schema Design, Views, Joins, CTEs, Aggregationen, Window Functions
+
+Datenmodellierung
+
+Fact- und Dimensionstabellen / Star-Schema-Export
+
+Business Intelligence
+
+Power BI, DAX, Power Query
+
+Spreadsheet-Reporting
+
+Excel
+
+Tests
+
+Python unittest
+
+Continuous Integration
+
+GitHub Actions
+
+Logging
+
+Python logging
+
+📁 Repository-Struktur
+
 airport-operations-data-pipeline/
 ├── .github/
 │   └── workflows/
@@ -170,160 +314,187 @@ airport-operations-data-pipeline/
 ├── .gitignore
 ├── requirements.txt
 └── README.md
-```
 
-## Installation and local run
+🔧 Installation und lokaler Start
 
-### 1. Create a virtual environment
+1. Virtuelle Umgebung erstellen
 
-```bash
 python -m venv .venv
-```
 
-Linux/macOS:
+Linux/macOS
 
-```bash
 source .venv/bin/activate
-```
 
-Windows PowerShell:
+Windows PowerShell
 
-```powershell
 .venv\Scripts\Activate.ps1
-```
 
-### 2. Install dependencies
+2. Abhängigkeiten installieren
 
-```bash
 python -m pip install -r requirements.txt
-```
 
-### 3. Run the pipeline
+3. Pipeline ausführen
 
-```bash
 python -m src.main
-```
 
-To use another CSV with the same required columns:
+Eine andere CSV-Datei mit denselben erforderlichen Spalten kann über --input verwendet werden:
 
-```bash
 python -m src.main --input path/to/flights.csv
-```
 
-### 4. Run the tests
+4. Tests ausführen
 
-```bash
 python -m unittest discover -s tests -v
-```
 
-## Recreate the demo data
+🔧 Demo-Daten neu erzeugen
 
-The source dataset can be regenerated with a fixed seed:
+Der Quelldatensatz kann mit einem festen Seed reproduzierbar neu erstellt werden:
 
-```bash
 python scripts/generate_demo_data.py \
   --rows 800 \
   --seed 42 \
   --output data/raw/flights_raw.csv
 
 python -m src.main
-```
 
-Changing `--rows` or `--seed` creates a different synthetic dataset while preserving the same schema and injected quality-problem types.
+Durch eine Änderung von --rows oder --seed wird ein anderer synthetischer Datensatz erzeugt. Schema und Arten der absichtlich eingebauten Datenqualitätsprobleme bleiben dabei erhalten.
 
-## PostgreSQL usage
+PostgreSQL verwenden
 
-The database load is optional. The default database name is `airport_data`, and the project uses the PostgreSQL schema `airport_ops`.
+Das Laden in die Datenbank ist optional. Als Standard-Datenbankname wird airport_data verwendet; das Projekt arbeitet mit dem PostgreSQL-Schema airport_ops.
 
-Set connection values in your shell before running the database load:
+Vor dem Datenbanklauf müssen die Verbindungswerte in der Shell gesetzt werden:
 
-```bash
 export DB_HOST=localhost
 export DB_PORT=5432
 export DB_USER=postgres
 export DB_PASSWORD="your_password"
 export DB_NAME=airport_data
-```
 
-Then run:
+Anschließend kann die Pipeline mit Datenbank-Ladevorgang gestartet werden:
 
-```bash
 python -m src.main --with-db
-```
 
-The pipeline executes `sql/01_postgresql_schema.sql` automatically and loads the dimension, fact, quality-issue, and pipeline-run tables. Reporting views can then be created separately:
+Die Pipeline führt sql/01_postgresql_schema.sql automatisch aus und lädt anschließend Dimensionstabellen, Fact Tables, Quality Issues und Pipeline-Run-Daten.
 
-```bash
+Reporting-Views können danach separat erstellt werden:
+
 psql -d airport_data -f sql/02_views.sql
-```
 
-`sql/03_analysis_queries.sql` contains example analytical SQL, including CTEs and window functions. `sql/04_data_quality_queries.sql` contains monitoring and integrity checks.
+sql/03_analysis_queries.sql enthält beispielhafte analytische SQL-Abfragen, darunter CTEs und Window Functions.
+sql/04_data_quality_queries.sql enthält Abfragen zur Überwachung der Datenqualität und zur Prüfung der Datenintegrität.
 
-> `.env.example` is provided as a configuration reference. The application reads environment variables directly and does not automatically load a local `.env` file.
+📌 Konfigurationshinweis: .env.example dient als Referenz für die benötigten Umgebungsvariablen. Die Anwendung liest Umgebungsvariablen direkt ein und lädt eine lokale .env-Datei nicht automatisch.
 
-## Reporting outputs
+📊 Reporting-Ausgaben
 
-Important generated outputs include:
+Zu den wichtigsten erzeugten Dateien gehören:
 
-- `data/processed/flights_clean.csv` - accepted and enriched flight records.
-- `data/rejected/flights_rejected.csv` - rejected source records with rejection reasons.
-- `data/rejected/quality_issues.csv` - one traceable issue record per detected quality failure.
-- `reports/executive_summary.csv` - overall operational and quality KPIs.
-- `reports/airline_kpis.csv` and `reports/route_kpis.csv` - performance summaries.
-- `reports/daily_kpis.csv` and `reports/monthly_kpis.csv` - time-based trends.
-- `reports/data_quality_summary.csv` - grouped rule failures.
-- `reports/delay_statistics.csv` - descriptive delay statistics.
-- `reports/management_summary.md` - short management-facing narrative.
-- `reports/airport_operations_dashboard.xlsx` - static Excel dashboard/report snapshot.
+data/processed/flights_clean.csv – akzeptierte und angereicherte Flugdatensätze.
 
-See `docs/data_dictionary.md` for the main datasets and columns.
+data/rejected/flights_rejected.csv – abgelehnte Quelldatensätze inklusive Ablehnungsgrund.
 
-## Power BI assets
+data/rejected/quality_issues.csv – nachvollziehbarer Quality-Issue-Eintrag für jeden erkannten Fehler.
 
-The pipeline writes BI-ready fact and dimension CSVs to `data/powerbi/`. The `powerbi/` directory contains:
+reports/executive_summary.csv – zentrale operative und Datenqualitäts-KPIs.
 
-- the exported dashboard PDF;
-- DAX measures;
-- model and relationship notes;
-- Power Query scripts for loading the generated CSVs.
+reports/airline_kpis.csv und reports/route_kpis.csv – Leistungsübersichten nach Airline und Route.
 
-![Power BI data-quality page](docs/images/powerbi_data_quality.png)
+reports/daily_kpis.csv und reports/monthly_kpis.csv – zeitbasierte KPI-Trends.
 
-The original development `.pbix` file is intentionally not included in this public-ready version because Power BI binaries can retain environment-specific service and connection metadata. The included PDF, DAX, Power Query, model documentation, and star-schema CSVs are enough to review and rebuild the report without publishing that metadata.
+reports/data_quality_summary.csv – gruppierte Auswertung der fehlgeschlagenen Qualitätsregeln.
 
-## Tests and CI
+reports/delay_statistics.csv – deskriptive Statistiken zu Verspätungen.
 
-The test suite currently covers transformation rules, duplicate handling, cancelled flights, report aggregation, executive count reconciliation, quality-issue creation, Power BI star-schema export, and an edge case where every input row is rejected.
+reports/management_summary.md – kompakte Management-Zusammenfassung.
 
-GitHub Actions runs three checks on every push and pull request:
+reports/airport_operations_dashboard.xlsx – statischer Excel-Dashboard-/Report-Snapshot.
 
-1. Python compilation.
-2. Unit tests.
-3. A full pipeline smoke run against the committed demo input.
+Weitere Informationen zu den wichtigsten Datensätzen und Spalten befinden sich in docs/data_dictionary.md.
 
-## Skills demonstrated
+Power-BI-Artefakte
 
-This project demonstrates practical junior-level experience with:
+Die Pipeline schreibt BI-fertige Fact- und Dimensionstabellen nach data/powerbi/.
 
-- modular Python ETL design;
-- pandas data cleaning and transformation;
-- rule-based data quality and rejected-record handling;
-- data lineage through source row numbers and issue IDs;
-- KPI generation and descriptive analytics;
-- relational schema design and SQL analysis;
-- PostgreSQL loading and upsert logic;
-- star-schema preparation for BI tools;
-- Power BI, DAX, Power Query, and Excel reporting;
-- unit testing, logging, and GitHub Actions CI.
+Der Ordner powerbi/ enthält unter anderem:
 
-## Possible next improvements
+das exportierte Dashboard als PDF,
 
-These are not part of the current implementation, but would be reasonable next steps:
+DAX Measures,
 
-- make database views part of the automated database deployment step;
-- add incremental processing instead of full-file runs;
-- introduce a lightweight orchestration tool such as Prefect or Airflow;
-- add Docker for a repeatable Python/PostgreSQL environment;
-- add richer quality metrics and run-to-run trend monitoring;
-- support another ingestion source such as an API or object storage;
-- publish a newly sanitized `.pbix` built only from local project sources.
+Hinweise zum Datenmodell und zu den Beziehungen,
+
+Power-Query-Skripte zum Laden der erzeugten CSV-Dateien.
+
+
+
+⚠️ Hinweis zur .pbix-Datei: Die ursprüngliche Entwicklungsdatei ist bewusst nicht Bestandteil dieser öffentlich vorbereiteten Version. Power-BI-Binärdateien können umgebungsspezifische Service- und Verbindungsmetadaten enthalten. Die enthaltenen PDF-, DAX-, Power-Query- und Modelldokumentationen sowie die Star-Schema-CSVs ermöglichen dennoch eine fachliche Prüfung und einen reproduzierbaren Neuaufbau des Reports.
+
+✅ Tests und Continuous Integration
+
+Die Testsuite deckt unter anderem folgende Bereiche ab:
+
+Transformations- und Validierungsregeln,
+
+Erkennung doppelter Datensätze,
+
+Behandlung stornierter Flüge,
+
+KPI- und Report-Aggregationen,
+
+Abstimmung der Executive-Kennzahlen,
+
+Erzeugung von Quality Issues,
+
+Export des Power-BI-Star-Schemas,
+
+Edge Case, bei dem alle Eingabedatensätze abgelehnt werden.
+
+GitHub Actions führt bei jedem Push und Pull Request drei Prüfungen aus:
+
+Python-Kompilierung.
+
+Unit Tests.
+
+Vollständiger Pipeline-Smoke-Test mit dem enthaltenen Demo-Datensatz.
+
+Nachgewiesene Kenntnisse
+
+Das Projekt demonstriert praxisnahe Kenntnisse auf Junior-Level in folgenden Bereichen:
+
+modularer ETL-Entwurf mit Python,
+
+Datenbereinigung und Transformation mit pandas,
+
+regelbasierte Datenqualitätsprüfung und Behandlung abgelehnter Datensätze,
+
+Data Lineage über Quellzeilen und Issue IDs,
+
+KPI-Erzeugung und deskriptive Analysen,
+
+relationales Schema Design und SQL-Analyse,
+
+PostgreSQL-Loading und Upsert-Logik,
+
+Vorbereitung eines Star Schemas für BI-Werkzeuge,
+
+Reporting mit Power BI, DAX, Power Query und Excel,
+
+Unit Testing, Logging und GitHub Actions CI.
+
+💡 Mögliche Weiterentwicklungen
+
+Die folgenden Punkte sind noch nicht Teil der aktuellen Implementierung, bieten sich jedoch als sinnvolle nächste Schritte an:
+
+Datenbank-Views in den automatisierten Datenbank-Deployment-Prozess integrieren.
+
+Inkrementelle Verarbeitung anstelle vollständiger Dateiläufe ergänzen.
+
+Ein leichtgewichtiges Orchestrierungswerkzeug wie Prefect oder Airflow einführen.
+
+Docker für eine reproduzierbare Python-/PostgreSQL-Umgebung ergänzen.
+
+Erweiterte Datenqualitätskennzahlen und Run-to-Run-Trendanalysen hinzufügen.
+
+Weitere Datenquellen wie APIs oder Object Storage unterstützen.
+
+Eine vollständig bereinigte .pbix-Datei ausschließlich aus lokalen Projektquellen neu erstellen.
