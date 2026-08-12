@@ -1,0 +1,2 @@
+extracted_records,accepted_records,rejected_records,acceptance_rate_pct,rejection_rate_pct,total_flights,total_passengers,on_time_rate_pct,delay_rate_pct,cancellation_rate_pct,average_delay_minutes,median_delay_minutes,p90_delay_minutes
+800,728,72,91.0,9.0,728,136120,49.45,46.29,4.26,22.99,12.0,53.0

@@ -1,0 +1,10 @@
+rule_code,quality_dimension,severity,issue_description,issue_count,affected_record_rate_pct
+DQ001,Completeness,High,missing flight_id,8,1.0
+DQ003,Uniqueness,High,duplicate flight_id,8,1.0
+DQ004,Completeness,High,missing airline,8,1.0
+DQ005,Validity,High,invalid origin,8,1.0
+DQ007,Consistency,High,origin equals destination,8,1.0
+DQ008,Validity,High,invalid scheduled_time,8,1.0
+DQ009,Completeness,Medium,actual_time required for non-cancelled flight,8,1.0
+DQ010,Validity,High,invalid status,8,1.0
+DQ011,Validity,High,passengers must be a non-negative integer,8,1.0

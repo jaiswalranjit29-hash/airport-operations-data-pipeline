@@ -1,0 +1,9 @@
+airline,total_flights,on_time_flights,delayed_flights,cancelled_flights,average_delay_minutes,p90_delay_minutes,total_passengers,on_time_rate_pct,delay_rate_pct,cancellation_rate_pct
+Condor,80,38,42,0,29.4,71.8,14797,47.5,52.5,0.0
+Air France,89,44,43,2,24.01,53.0,17167,49.44,48.31,2.25
+Iberia,105,52,50,3,21.52,47.4,19953,49.52,47.62,2.86
+United Airlines,95,47,45,3,28.15,72.2,17727,49.47,47.37,3.16
+KLM,77,37,35,5,21.83,43.8,14123,48.05,45.45,6.49
+Lufthansa,87,41,39,7,19.48,49.0,16575,47.13,44.83,8.05
+Emirates,98,51,42,5,20.68,49.5,18688,52.04,42.86,5.1
+British Airways,97,50,41,6,19.71,46.0,17090,51.55,42.27,6.19
