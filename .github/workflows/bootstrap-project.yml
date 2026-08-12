@@ -16,17 +16,33 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Reconstruct project archive
+
+      - name: Reconstruct project source
         shell: bash
         run: |
           set -euo pipefail
-          cat .project.part* | base64 --decode > /tmp/project.zip
+          cat .project.part* | base64 --decode > /tmp/project.tar.gz
           rm -rf /tmp/project
           mkdir -p /tmp/project
-          unzip -q /tmp/project.zip -d /tmp/project
-          PROJECT_ROOT="$(find /tmp/project -mindepth 1 -maxdepth 1 -type d | head -n 1)"
-          test -n "$PROJECT_ROOT"
-          rsync -a --delete --exclude='.git/' "$PROJECT_ROOT/" ./
+          tar -xzf /tmp/project.tar.gz -C /tmp/project
+          rsync -a --delete --exclude='.git/' /tmp/project/ ./
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Generate and validate demo outputs
+        shell: bash
+        run: |
+          set -euo pipefail
+          python scripts/generate_demo_data.py --rows 800 --seed 42 --output data/raw/flights_raw.csv
+          python -m src.main
+          python -m unittest discover -s tests -v
+
       - name: Commit portfolio-ready project
         shell: bash
         run: |
