@@ -6,8 +6,6 @@ Die Pipeline nutzt **Python** und **pandas** für ETL-Prozesse, dokumentiert Dat
 
 📌 **Hinweis:** Dieses Repository ist als reproduzierbares **Portfolio-Projekt** konzipiert und nicht als produktives Luftfahrtsystem. Sämtliche enthaltenen Flugdaten sind synthetisch.
 
-![Power BI – Management-Übersicht](docs/images/powerbi_overview.png)
-
 ---
 
 ## Problemstellung
